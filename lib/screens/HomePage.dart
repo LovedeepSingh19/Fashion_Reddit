@@ -1,7 +1,10 @@
+import 'package:fashion_app/models/user.dart';
+import 'package:fashion_app/providers/userProvider.dart';
 import 'package:fashion_app/screens/WelcomePage.dart';
 import 'package:fashion_app/widgets/NavigationBarWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -12,23 +15,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      Provider.of<UserProvider>(context, listen: false).refreshUser();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final User userData =
+        Provider.of<UserProvider>(context, listen: false).getUser;
     return Scaffold(
-      body: NavigationBarWidget(),
+      body: userData.photoUrl != null
+          ? NavigationBarWidget()
+          : const CircularProgressIndicator(),
     );
-    // Container(
-    //   child: Column(
-    //     children: [
-    //       Text('Ahhhh... shit here we go again'),
-    //       ElevatedButton(
-    //           onPressed: () async {
-    //             await Auth().signOut();
-    //             Navigator.push(context,
-    //                 MaterialPageRoute(builder: (context) => WelcomePage()));
-    //           },
-    //           child: Text("logout"))
-    //     ],
-    //   ),
-    // );
   }
 }

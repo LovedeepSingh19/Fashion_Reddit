@@ -1,10 +1,12 @@
-import 'package:fashion_app/screens/Navigation/ChatPage.dart';
-import 'package:fashion_app/screens/Navigation/DiscoverPage.dart';
-import 'package:fashion_app/screens/Navigation/GroupsPage.dart';
-import 'package:fashion_app/screens/Navigation/MyClosetPage.dart';
-import 'package:fashion_app/screens/Navigation/SavedPage.dart';
+import 'package:fashion_app/providers/userProvider.dart';
+import 'package:fashion_app/screens/navigation/ChatPage.dart';
+import 'package:fashion_app/screens/navigation/DiscoverPage.dart';
+import 'package:fashion_app/screens/navigation/GroupsPage.dart';
+import 'package:fashion_app/screens/navigation/MyClosetPage.dart';
+import 'package:fashion_app/screens/navigation/SavedPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NavigationBarWidget extends StatefulWidget {
   NavigationBarWidget({Key? key}) : super(key: key);
@@ -33,39 +35,6 @@ class _NavigationBarState extends State<NavigationBarWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   // backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-      //   title: Center(
-      //     child: Text(
-      //       _titles[_currentIndex],
-      //       // textAlign: TextAlign.center,
-      //       style: TextStyle(
-      //           color: Colors.orange.shade800, fontWeight: FontWeight.w600),
-      //     ),
-      //   ),
-      // ),
-      // drawer: Drawer(
-      //     child: ListView(
-      //   padding: EdgeInsets.zero,
-      //   children: const <Widget>[
-      //     UserAccountsDrawerHeader(
-      //       accountName: Padding(
-      //         padding: EdgeInsets.only(left: 5),
-      //         child: Text(""),
-      //       ),
-      //       accountEmail: Padding(
-      //         padding: EdgeInsets.only(left: 5),
-      //         child: Text(''),
-      //       ),
-      //       // currentAccountPicture: CircleAvatar(
-      //       //   child: user.image_ref != ""
-      //       //       ? UserProfileImage(imageUrl: user.image_ref)
-      //       //       : ClipOval(child: Image.asset('${user.image_path}')),
-      //       // ),
-      //       decoration: BoxDecoration(color: Colors.amber),
-      //     ),
-      //   ],
-      // )),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         unselectedItemColor: Colors.grey,

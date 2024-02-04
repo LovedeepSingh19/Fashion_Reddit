@@ -1,44 +1,24 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_app/models/post.dart';
 import 'package:fashion_app/models/user.dart';
 import 'package:fashion_app/providers/userProvider.dart';
 import 'package:fashion_app/screens/DetailsPage.dart';
-import 'package:fashion_app/screens/MyFeed.dart';
 import 'package:fashion_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class SavedPage extends StatefulWidget {
-  SavedPage({Key? key}) : super(key: key);
+class FeedScreen extends StatefulWidget {
+  const FeedScreen({Key? key}) : super(key: key);
 
   @override
-  _SavedPageState createState() => _SavedPageState();
+  State<FeedScreen> createState() => _FeedScreenState();
 }
 
-class _SavedPageState extends State<SavedPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Saved"),
-        ),
-        body: Column(
-          children: [
-            SavedPageMainPart(),
-          ],
-        ));
-  }
-}
-
-class SavedPageMainPart extends StatefulWidget {
-  SavedPageMainPart({Key? key}) : super(key: key);
-
-  @override
-  _SavedPageMainPartState createState() => _SavedPageMainPartState();
-}
-
-class _SavedPageMainPartState extends State<SavedPageMainPart>
-    with TickerProviderStateMixin {
+class _FeedScreenState extends State<FeedScreen> with TickerProviderStateMixin {
   AnimationController? animationController;
   @override
   void initState() {
@@ -78,7 +58,7 @@ class _SavedPageMainPartState extends State<SavedPageMainPart>
                         stream: FirebaseFirestore.instance
                             .collection('users')
                             .doc(userData.uid)
-                            .collection("SavedPosts")
+                            .collection("posts")
                             .snapshots(),
                         builder: (context,
                             AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
@@ -99,41 +79,37 @@ class _SavedPageMainPartState extends State<SavedPageMainPart>
                               child: CircularProgressIndicator(),
                             );
                           }
-                          return Container(
-                            height: MediaQuery.sizeOf(context).height - 220,
-                            child: GridView(
-                              padding: const EdgeInsets.all(8),
-                              physics: const BouncingScrollPhysics(),
-                              scrollDirection: Axis.vertical,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                mainAxisSpacing: 2.0,
-                                crossAxisSpacing: 2.0,
-                                childAspectRatio: 0.6,
-                              ),
-                              children: List<Widget>.generate(
-                                snapshot.data!.docs.length,
-                                (int index) {
-                                  final int count = snapshot.data!.docs.length;
-                                  final Animation<double> animation =
-                                      Tween<double>(begin: 0.0, end: 1.0)
-                                          .animate(
-                                    CurvedAnimation(
-                                      parent: animationController!,
-                                      curve: Interval((1 / count) * index, 1.0,
-                                          curve: Curves.fastOutSlowIn),
-                                    ),
-                                  );
-                                  animationController?.forward();
-                                  return SavedDataView(
-                                    // callback: widget.callBack,x
-                                    category: snapshot.data!.docs[index].data(),
-                                    animation: animation,
-                                    animationController: animationController,
-                                  );
-                                },
-                              ),
+                          return GridView(
+                            padding: const EdgeInsets.all(8),
+                            physics: const BouncingScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 32.0,
+                              crossAxisSpacing: 32.0,
+                              childAspectRatio: 0.9,
+                            ),
+                            children: List<Widget>.generate(
+                              snapshot.data!.docs.length,
+                              (int index) {
+                                final int count = snapshot.data!.docs.length;
+                                final Animation<double> animation =
+                                    Tween<double>(begin: 0.0, end: 1.0).animate(
+                                  CurvedAnimation(
+                                    parent: animationController!,
+                                    curve: Interval((1 / count) * index, 1.0,
+                                        curve: Curves.fastOutSlowIn),
+                                  ),
+                                );
+                                animationController?.forward();
+                                return CategoryView(
+                                  // callback: widget.callBack,x
+                                  category: snapshot.data!.docs[index].data(),
+                                  animation: animation,
+                                  animationController: animationController,
+                                );
+                              },
                             ),
                           );
                         });
@@ -142,8 +118,8 @@ class _SavedPageMainPartState extends State<SavedPageMainPart>
   }
 }
 
-class SavedDataView extends StatelessWidget {
-  const SavedDataView({
+class CategoryView extends StatelessWidget {
+  const CategoryView({
     Key? key,
     required this.category,
     this.animationController,
@@ -246,6 +222,77 @@ class SavedDataView extends StatelessWidget {
             ),
           ),
         );
+      },
+    );
+  }
+}
+
+class ImageCacheManager {
+  static final ImageCacheManager _instance = ImageCacheManager._internal();
+
+  factory ImageCacheManager() {
+    return _instance;
+  }
+
+  ImageCacheManager._internal();
+
+  final Map<String, Uint8List?> _imageCache = {};
+
+  Future<Uint8List?> getImageData(String imageUrl) async {
+    if (_imageCache.containsKey(imageUrl)) {
+      return _imageCache[imageUrl];
+    }
+
+    try {
+      final response = await NetworkAssetBundle(Uri.parse(imageUrl)).load('');
+      if (response != null) {
+        _imageCache[imageUrl] = response.buffer.asUint8List();
+        return _imageCache[imageUrl];
+      }
+    } catch (e) {
+      print("Error loading image: $e");
+    }
+
+    return null;
+  }
+}
+
+class CachedNetworkImage extends StatefulWidget {
+  final String imageUrl;
+
+  const CachedNetworkImage({required this.imageUrl, Key? key})
+      : super(key: key);
+
+  @override
+  _CachedNetworkImageState createState() => _CachedNetworkImageState();
+}
+
+class _CachedNetworkImageState extends State<CachedNetworkImage> {
+  late Future<Uint8List?> _imageData;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageData = ImageCacheManager().getImageData(widget.imageUrl);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _imageData,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.data != null) {
+          return Image.memory(
+            snapshot.data!,
+            fit: BoxFit.fitHeight, // Adjust the BoxFit as needed
+          );
+        } else if (snapshot.hasError) {
+          return Icon(Icons.error); // Error widget
+        } else {
+          return Center(
+              child: CircularProgressIndicator()); // Loading placeholder
+        }
       },
     );
   }

@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:fashion_app/firebase/auth.dart';
-import 'package:fashion_app/models/user.dart';
+import 'package:fashion_app/providers/messageReplyProvider.dart';
 import 'package:fashion_app/providers/userProvider.dart';
 import 'package:fashion_app/screens/HomePage.dart';
 import 'package:fashion_app/screens/WelcomePage.dart';
@@ -20,6 +19,9 @@ Future<void> main() async {
     providers: [
       ChangeNotifierProvider(
         create: (_) => UserProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => MessageReplyProvider(),
       ),
     ],
     child: const MyApp(),
@@ -42,42 +44,15 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark,
     ));
     return MaterialApp(
-      title: 'Flutter UI',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: AppTheme.textTheme,
-        useMaterial3: true,
-      ),
-      home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.active) {
-            // Checking if the snapshot has any data or not
-            if (snapshot.hasData) {
-              // if snapshot has data which means user is logged in then we check the width of screen and accordingly display the screen layout
-              return HomePage();
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text('${snapshot.error}'),
-              );
-            }
-          }
-
-          // means connection to future hasnt been made yet
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return WelcomePage();
-        },
-      ),
-    );
+        title: 'Flutter UI',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          textTheme: AppTheme.textTheme,
+          useMaterial3: true,
+        ),
+        home: FirebaseAuth.instance.currentUser != null
+            ? HomePage()
+            : WelcomePage());
   }
 }
-//       user != null ? HomePage() : WelcomePage(),
-//     );
-//   }
-// }

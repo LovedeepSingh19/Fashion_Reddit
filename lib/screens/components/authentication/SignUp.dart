@@ -19,6 +19,7 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
+  TextEditingController _phoneNumberController = TextEditingController();
   bool _isLoading = false;
   Uint8List? _image;
   bool rememberUser = false;
@@ -30,27 +31,26 @@ class _SignUpPageState extends State<SignUpPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
+    _phoneNumberController.dispose();
   }
 
   void signUpUser() async {
-    // set loading to true
     setState(() {
       _isLoading = true;
     });
 
-    // signup user using our authmethodds
     String res = await AuthMethods().signUpUser(
         email: _emailController.text,
         password: _passwordController.text,
         username: _usernameController.text,
-        bio: "",
+        phoneNumber: _phoneNumberController.text,
         file: _image!);
-    // if string returned is sucess, user has been created
+
     if (res == "success") {
       setState(() {
         _isLoading = false;
       });
-      // navigate to the home screen
+
       if (context.mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomePage()),
@@ -60,7 +60,6 @@ class _SignUpPageState extends State<SignUpPage> {
       setState(() {
         _isLoading = false;
       });
-      // show the error
       if (context.mounted) {
         showSnackBar(context, res);
       }
@@ -69,7 +68,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   selectImage() async {
     Uint8List im = await pickImage(ImageSource.gallery);
-    // set state because we need to display the image we selected on the circle avatar
     setState(() {
       _image = im;
     });
@@ -100,19 +98,37 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildTop() {
     return SizedBox(
       width: MediaQuery.sizeOf(context).width,
-      child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Fashion",
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
-                fontSize: 40,
-                letterSpacing: 2),
-          )
-        ],
+      child: Center(
+        child: Stack(
+          children: [
+            _image != null
+                ? CircleAvatar(
+                    radius: 64,
+                    backgroundImage: MemoryImage(_image!),
+                    backgroundColor: Colors.black,
+                  )
+                : InkWell(
+                    child: const CircleAvatar(
+                      radius: 64,
+                      backgroundImage:
+                          NetworkImage('https://i.stack.imgur.com/l60Hf.png'),
+                      backgroundColor: Colors.black,
+                    ),
+                    onTap: selectImage,
+                  ),
+            Positioned(
+              bottom: -10,
+              left: 80,
+              child: IconButton(
+                onPressed: selectImage,
+                icon: const Icon(
+                  Icons.add_a_photo,
+                  color: AppTheme.lightText,
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -146,31 +162,7 @@ class _SignUpPageState extends State<SignUpPage> {
               fontWeight: FontWeight.w500),
         ),
         _buildGreyText("Please enter your details for signup"),
-        const SizedBox(height: 60),
-        Stack(
-          children: [
-            _image != null
-                ? CircleAvatar(
-                    radius: 64,
-                    backgroundImage: MemoryImage(_image!),
-                    backgroundColor: Colors.red,
-                  )
-                : const CircleAvatar(
-                    radius: 64,
-                    backgroundImage:
-                        NetworkImage('https://i.stack.imgur.com/l60Hf.png'),
-                    backgroundColor: Colors.red,
-                  ),
-            Positioned(
-              bottom: -10,
-              left: 80,
-              child: IconButton(
-                onPressed: selectImage,
-                icon: const Icon(Icons.add_a_photo),
-              ),
-            )
-          ],
-        ),
+        const SizedBox(height: 20),
         _buildGreyText("Username"),
         TextField(
           controller: _usernameController,
@@ -178,7 +170,7 @@ class _SignUpPageState extends State<SignUpPage> {
             suffixIcon: Icon(Icons.done),
           ),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 20),
         _buildGreyText("Email address"),
         TextField(
           controller: _emailController,
@@ -186,18 +178,27 @@ class _SignUpPageState extends State<SignUpPage> {
             suffixIcon: Icon(Icons.done),
           ),
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 20),
+        _buildGreyText("Phone Number"),
+        TextField(
+          controller: _phoneNumberController,
+          decoration: const InputDecoration(
+            suffixIcon: Icon(Icons.done),
+          ),
+        ),
+        const SizedBox(height: 20),
         _buildGreyText("Password"),
         TextField(
           controller: _passwordController,
           decoration: InputDecoration(
             suffixIcon: InkWell(
-              child: const Icon(Icons.remove_red_eye),
-              onTap: () => setState(() {
-                print(!passwordVisible);
-                passwordVisible = !passwordVisible;
-              }),
-            ),
+                child: const Icon(Icons.remove_red_eye),
+                onTap: () => {
+                      setState(() {
+                        print(!passwordVisible);
+                        passwordVisible = !passwordVisible;
+                      }),
+                    }),
           ),
           obscureText: passwordVisible,
         ),
@@ -222,24 +223,8 @@ class _SignUpPageState extends State<SignUpPage> {
       onPressed: () async {
         debugPrint("Email : ${_emailController.text}");
         debugPrint("Password : ${_passwordController.text}");
-        await AuthMethods()
-            .signUpUser(
-                email: _emailController.text,
-                password: _passwordController.text,
-                username: _usernameController.text,
-                bio: '',
-                file: Uint8List(0))
-            .then((value) => {
-                  if (value == 'success')
-                    {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                      )
-                    }
-                  else
-                    {print('Signup failed')}
-                });
+        signUpUser();
+
         // final GoogleSignInAccount? googleUser =
         //     await GoogleSignIn(scopes: <String>["email"]).signIn();
         // final GoogleSignInAuthentication googleAuth =

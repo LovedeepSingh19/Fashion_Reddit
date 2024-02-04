@@ -47,5 +47,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+		<key>NSContactsUsageDescription</key>
+    <string>For personal and group chatting</string>
+		<key>NSCameraUsageDescription</key>
+    <string>Capturing picture for posts</string>
+		<key>NSMicrophoneUsageDescription</key>
+    <string>Capturing picture for posts</string>
 </dict>
 </plist>

@@ -15,6 +15,9 @@ class AuthMethods {
     DocumentSnapshot documentSnapshot =
         await _firestore.collection('users').doc(currentUser.uid).get();
 
+    print("documentSnapshot");
+    print(documentSnapshot.data());
+
     return model.User.fromSnap(documentSnapshot);
   }
 
@@ -24,7 +27,7 @@ class AuthMethods {
     required String email,
     required String password,
     required String username,
-    required String bio,
+    required String phoneNumber,
     required Uint8List file,
   }) async {
     String res = "Some error Occurred";
@@ -32,7 +35,7 @@ class AuthMethods {
       if (email.isNotEmpty ||
           password.isNotEmpty ||
           username.isNotEmpty ||
-          bio.isNotEmpty ||
+          phoneNumber.isNotEmpty ||
           file != null) {
         // registering user in auth with email and password
         UserCredential cred = await _auth.createUserWithEmailAndPassword(
@@ -48,18 +51,16 @@ class AuthMethods {
           uid: cred.user!.uid,
           photoUrl: photoUrl,
           email: email,
-          bio: bio,
-          followers: [],
-          following: [],
+          phoneNumber: phoneNumber,
         );
+        print(user.phoneNumber);
 
         // adding user in our database
         await _firestore
             .collection("users")
             .doc(cred.user!.uid)
-            .set(user.toJson());
-
-        res = "success";
+            .set(user.toJson())
+            .then((value) => {res = "success"});
       } else {
         res = "Please enter all the fields";
       }
