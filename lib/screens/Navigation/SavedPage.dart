@@ -87,7 +87,7 @@ class _SavedPageMainPartState extends State<SavedPageMainPart>
                               snapshot.data!.docs.isEmpty) {
                             return const Center(
                                 child: Text(
-                              "Closet is empty",
+                              "Nothing's saved yet",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 20),
                             ));

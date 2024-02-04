@@ -74,7 +74,6 @@ class _RightPartState extends State<RightPart> with TickerProviderStateMixin {
                                 : (widget.BrandName != ""
                                     ? FirebaseFirestore.instance
                                         .collection('posts')
-                                        .orderBy("views", descending: true)
                                         .where("brand",
                                             isEqualTo: widget.BrandName)
                                         .snapshots()
